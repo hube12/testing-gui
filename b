@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
-#GENERATOR=Ninja
-GENERATOR=Xcode
+GENERATOR=Ninja
+#GENERATOR=Xcode
 
 mkdir -p build
 cd build
