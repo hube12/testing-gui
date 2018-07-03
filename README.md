@@ -28,7 +28,6 @@ This is a simple template project that can build a [dear imgui](https://github.c
   * They are git submodules
 * CMake - builds Ninja, Xcode, Makefiles, etc.
 * OpenGL 3
-* Orthodox C++
 * Tested on Mac (should work on Linux and Windows)
 
 
