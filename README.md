@@ -9,14 +9,13 @@ This is a simple template project that can build a standalone [dear imgui](https
     $ git clone --recurse-submodules https://github.com/urddru/imgui-glfw.git
 
 
-    # The default generator is Ninja
+    # This will create the build dir and run CMake
     $ b
 
-    # or if you don't have '.' in your PATH env var
+    # or if you don't have '.' in your PATH,  "./b"
 
-    $ ./b
 
-    # Then build using your generator
+    # Then build. Ninja is the default.
 
     $ cd build; ninja
 
