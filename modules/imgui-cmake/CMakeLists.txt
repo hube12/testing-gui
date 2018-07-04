@@ -18,14 +18,12 @@ list(APPEND IMGUI_PRIVATE_HEADERS
         "${IMGUI_SRC_DIR}/imgui.cpp"
         "${IMGUI_SRC_DIR}/imgui_draw.cpp"
         "${IMGUI_SRC_DIR}/imgui_demo.cpp"
-        "${IMGUI_SRC_DIR}/examples/libs/gl3w/GL/gl3w.c"
         ${CRYPTO_PUBLIC_HEADERS}
         ${CRYPTO_PRIVATE_HEADERS}
         )
 
 list(APPEND IMGUI_PUBLIC_INCLUDE_DIRS
         ${IMGUI_SRC_DIR}
-        "${IMGUI_SRC_DIR}/examples/libs/gl3w"
         )
 
 list(APPEND IMGUI_PUBLIC_LIBRARIES)
@@ -37,17 +35,3 @@ target_include_directories(${NAME}
         PUBLIC  ${IMGUI_PUBLIC_INCLUDE_DIRS}
         PRIVATE ${IMGUI_PRIVATE_INCLUDE_DIRS}
         )
-
-#asap_library(
-#        TARGET
-#        imgui
-#        SOURCES
-#        ${IMGUI_SRC}
-#        EXPORT_NAME
-#        imgui
-#        PUBLIC_INCLUDE_DIRS
-#        ${IMGUI_PUBLIC_INCLUDE_DIRS}
-#        PUBLIC_LIBRARIES
-#        ${CRYPTO_PUBLIC_LIBRARIES}
-#)
-
