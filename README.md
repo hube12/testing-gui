@@ -24,12 +24,12 @@ This is a simple template project that can build a standalone [dear imgui](https
 ## Features
 
 * GLFW and Dear Imgui only - (no boost, etc.)
-  * They are git submodules
+  * They are imported as git submodules
 * Based on Dear Imgui glfw-opengl3 sample
 * Minimal CMake for build generation - builds Ninja, Xcode, Makefiles, etc.
 * OpenGL 3
 * Tested on Mac and Linux (even Wayland)
-  * (might work Windows)
+  * Might work Windows
 
 
 ## Options
