@@ -29,7 +29,7 @@ This is a simple template project that can build a standalone [dear imgui](https
 * Minimal CMake for build generation - builds Ninja, Xcode, Makefiles, etc.
 * OpenGL 3
 * Tested on Mac and Linux (even Wayland)
-  * Might work Windows
+  * Might work with minor mods on Windows
 
 
 ## Options
