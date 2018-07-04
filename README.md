@@ -26,23 +26,20 @@ This is a simple template project that can build a [dear imgui](https://github.c
 
 * GLFW and Dear Imgui only - (no boost, etc.)
   * They are git submodules
-* CMake - builds Ninja, Xcode, Makefiles, etc.
+* Based on Dear Imgui opengl-glfw sample
+* Minimal CMake for build generation - builds Ninja, Xcode, Makefiles, etc.
 * OpenGL 3
-* Tested on Mac (should work on Linux and Windows)
+* Tested on Mac and Linux (might work Windows)
 
 
 ## Options
 
-Edit the 'b' file to switch CMake generators.
+Edit the 'b' file to switch CMake generators or change other options.
 
 
 ## Todos
 
-1. Get a few more themes in there
-2. Embed the source location so fonts can load from that
-3. Demonstrate proportional fonts
-4. More fonts
-5. Simple spinning cube
+1. Simple spinning cube
 
 ## Credits
 
