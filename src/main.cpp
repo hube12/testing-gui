@@ -4,8 +4,8 @@
 // (GL3W is a helper library to access OpenGL functions since there is no standard header to access modern OpenGL functions easily. Alternatives are GLEW, Glad, etc.)
 
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "implementation/imgui_impl_glfw.h"
+#include "implementation/imgui_impl_opengl3.h"
 #include <stdio.h>
 //#include <GL/gl3w.h>    // This example is using gl3w to access OpenGL functions. You may freely use any other OpenGL loader such as: glew, glad, glLoadGen, etc.
 //#include <glew.h>
@@ -70,6 +70,10 @@ int main(int, char**)
     auto font_cousine = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "modules/imgui/misc/fonts/Cousine-Regular.ttf", 15.0f);
     auto font_karla   = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "modules/imgui/misc/fonts/Karla-Regular.ttf", 18.0f);
     auto font_lato    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/Lato-Regular.ttf", 18.0f);
+    auto font_lato_light    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/Lato-Light.ttf", 18.0f);
+    auto ringmaster    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/ringmaster.TTF", 18.0f);
+    auto futuristic    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/futuristic.TTF", 18.0f);
+    auto homoa    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/HOMOARAK.TTF", 18.0f);
 
 
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
@@ -113,6 +117,19 @@ int main(int, char**)
             case 3:
                 ImGui::PushFont(font_lato);
                 break;
+            case 4:
+                ImGui::PushFont(font_lato_light);
+                break;
+            case 5:
+                ImGui::PushFont(ringmaster);
+                break;
+            case 6:
+                ImGui::PushFont(futuristic);
+                break;
+            case 7:
+                ImGui::PushFont(homoa);
+                break;
+
         }
 
 
@@ -144,6 +161,26 @@ int main(int, char**)
             ImGui::PushFont(font_lato);
             ImGui::Text("Font Render Test - Lato: Bit Test.123");
             ImGui::Text("Font Render Test - Lato: XXXXXXXXXXXX");
+            ImGui::PopFont();
+
+            ImGui::PushFont(font_lato_light);
+            ImGui::Text("Font Render Test - Lato light: Bit Test.123");
+            ImGui::Text("Font Render Test - Lato: XXXXXXXXXXXX");
+            ImGui::PopFont();
+
+            ImGui::PushFont(ringmaster);
+            ImGui::Text("Font Render Test - ringMaster");
+            ImGui::Text("Font Render Test - ringMaster: XXXXXXXXXXXX");
+            ImGui::PopFont();
+
+            ImGui::PushFont(futuristic);
+            ImGui::Text("Font Render Test - futuristic");
+            ImGui::Text("Font Render Test - futuristic: XXXXXXXXXXXX");
+            ImGui::PopFont();
+
+            ImGui::PushFont(homoa);
+            ImGui::Text("Font Render Test - homoarak");
+            ImGui::Text("Font Render Test - homoarak: XXXXXXXXXXXX");
             ImGui::PopFont();
 
             if (ImGui::Button("Button"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
@@ -196,7 +233,7 @@ int main(int, char**)
                     }
                 }
 
-                const char* fonts[] = { "Default", "Cousine", "Karla", "Lato" };
+                const char* fonts[] = { "Default", "Cousine", "Karla", "Lato", "lato light", "ringmaster","futuristic","homoarak"};
                 ImGui::Combo("font-combo", &font_current, fonts, IM_ARRAYSIZE(fonts));
                 if (old_font_current != font_current)
                 {

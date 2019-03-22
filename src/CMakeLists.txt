@@ -1,10 +1,10 @@
 
 list(APPEND MAIN_APP_SOURCES
         main.cpp
-        imgui_impl_opengl3.h
-        imgui_impl_opengl3.cpp
-        imgui/imgui_impl_glfw.h
-        imgui/imgui_impl_glfw.cpp
+        implementation/imgui_impl_opengl3.h
+        implementation/imgui_impl_opengl3.cpp
+        implementation/imgui_impl_glfw.h
+        implementation/imgui_impl_glfw.cpp
         glad/glad.h
         glad/glad.c
         KHR/khrplatform.h
