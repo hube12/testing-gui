@@ -74,6 +74,7 @@ int main(int, char**)
     auto ringmaster    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/ringmaster.TTF", 18.0f);
     auto futuristic    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/futuristic.TTF", 18.0f);
     auto homoa    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/HOMOARAK.TTF", 18.0f);
+    auto jff    = io.Fonts->AddFontFromFileTTF( CPP_SRC_DIR "fonts/jff.ttf", 18.0f);
 
 
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
@@ -85,7 +86,6 @@ int main(int, char**)
     bool show_theme_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -128,6 +128,9 @@ int main(int, char**)
                 break;
             case 7:
                 ImGui::PushFont(homoa);
+                break;
+            case 8:
+                ImGui::PushFont(jff);
                 break;
 
         }
@@ -233,7 +236,7 @@ int main(int, char**)
                     }
                 }
 
-                const char* fonts[] = { "Default", "Cousine", "Karla", "Lato", "lato light", "ringmaster","futuristic","homoarak"};
+                const char* fonts[] = { "Default", "Cousine", "Karla", "Lato", "lato light", "ringmaster","futuristic","homoarak","jff"};
                 ImGui::Combo("font-combo", &font_current, fonts, IM_ARRAYSIZE(fonts));
                 if (old_font_current != font_current)
                 {
