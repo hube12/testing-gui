@@ -211,7 +211,7 @@ int main(int, char**)
             {
                 // Using the _simplified_ one-liner Combo() api here
                 // See "Combo" section for examples of how to use the more complete BeginCombo()/EndCombo() api.
-                const char* themes[] = { "Light", "Dark", "Default", "Softy" };
+                const char* themes[] = { "Light", "Dark", "Default", "Softy", "Custom"};
                 static int theme_current = 0;
                 static int old_theme_current = 0;
                 ImGui::Combo("theme-combo", &theme_current, themes, IM_ARRAYSIZE(themes));
@@ -232,6 +232,9 @@ int main(int, char**)
                             break;
                         case 3:
                             StyleColorsSofty();
+                            break;
+                        case 4:
+                            ImGui::StyleColorsCustom();
                             break;
                     }
                 }
