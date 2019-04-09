@@ -6,9 +6,11 @@
 #include <vector>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <cmath>
 
 #define IM_MAX(_A,_B)       (((_A) >= (_B)) ? (_A) : (_B))
 
+static int font_current = 0;
 static void glfw_error_callback(int error, const char *description) {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
@@ -16,7 +18,7 @@ static void glfw_error_callback(int error, const char *description) {
 
 static void ShowDebugMenu()
 {
-    ImGui::MenuItem("Debug Menu", NULL, false, false);
+    ImGui::MenuItem("Debug Menu", nullptr, false, false);
     if (ImGui::MenuItem("Open", "Ctrl+O")) {}
     if (ImGui::BeginMenu("Open Recent"))
     {
@@ -35,8 +37,13 @@ static void ShowDebugMenu()
 
     if (ImGui::BeginMenu("Themes"))
     {
-
         ImGui::ShowStyleSelector("Choose");
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Font"))
+    {
+        const char* fonts[] = { "Default", "Cousine", "Karla", "Lato", "lato light"};
+        ImGui::Combo("font-combo", &font_current, fonts, IM_ARRAYSIZE(fonts));
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Disabled", false)) // Disabled
@@ -50,22 +57,20 @@ static void ShowMainWindow(bool show){
     struct CustomConstraints // Helper functions to demonstrate programmatic constraints
     {
         static void Square(ImGuiSizeCallbackData* data) { data->DesiredSize = ImVec2(IM_MAX(data->DesiredSize.x, data->DesiredSize.y), IM_MAX(data->DesiredSize.x, data->DesiredSize.y)); }
-        static void Step(ImGuiSizeCallbackData* data)   { float step = (float)(int)(intptr_t)data->UserData; data->DesiredSize = ImVec2((int)(data->DesiredSize.x / step + 0.5f) * step, (int)(data->DesiredSize.y / step + 0.5f) * step); }
+        static void Step(ImGuiSizeCallbackData* data)   { auto step = (float)(int)(intptr_t)data->UserData; data->DesiredSize = ImVec2(roundf(data->DesiredSize.x / step + 0.5f) * step, roundf(data->DesiredSize.y / step + 0.5f) * step); }
     };
-    ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetWindowHeight(), ImGui::GetWindowHeight()),     ImVec2(ImGui::GetWindowHeight(), ImGui::GetWindowHeight()), CustomConstraints::Square);
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    window_flags |= ImGuiWindowFlags_NoScrollbar;
-    window_flags |= ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoResize;
-    window_flags |= ImGuiWindowFlags_NoCollapse;
-    window_flags |= ImGuiWindowFlags_NoNav;
-    if (!ImGui::Begin("Main", &show, window_flags))
-    {
-        // Early out if the window is collapsed, as an optimization.
-        ImGui::End();
-        return;
-    }
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), CustomConstraints::Square);
+    ImGuiWindowFlags window_flags = (unsigned int)0;
+    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoTitleBar;
+    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoScrollbar;
+    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoMove;
+    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoCollapse;
+    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoNav;
+    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoResize;
+    ImGui::Begin("Main", &show, window_flags);
+
+    ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.y,ImGui::GetIO().DisplaySize.y));
+
     ImGui::End();
 }
 static void ShowMainMenuBar()
@@ -132,12 +137,33 @@ int main(int argc, char **argv) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-
+        switch (font_current)
+        {
+            case 0:
+                ImGui::PushFont(font_default);
+                break;
+            case 1:
+                ImGui::PushFont(font_cousine);
+                break;
+            case 2:
+                ImGui::PushFont(font_karla);
+                break;
+            case 3:
+                ImGui::PushFont(font_lato);
+                break;
+            case 4:
+                ImGui::PushFont(font_lato_light);
+                break;
+            default:
+                ImGui::PushFont(font_default);
+                break;
+        }
         ShowMainMenuBar();
 
 
         bool showMain=true;
         ShowMainWindow(showMain);
+        ImGui::PopFont();
         // Rendering
         ImGui::Render();
         int display_w, display_h;
