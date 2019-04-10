@@ -8,24 +8,40 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 
-#define IM_MAX(_A,_B)       (((_A) >= (_B)) ? (_A) : (_B))
+#define IM_MAX(_A, _B)       (((_A) >= (_B)) ? (_A) : (_B))
 
+
+static inline ImVec2 operator*(ImVec2 a, ImVec2 b) { return {a.x * b.x, a.y * b.y}; }
+
+struct CustomConstraints // Helper functions to demonstrate programmatic constraints
+{
+    static void Square(ImGuiSizeCallbackData *data) {
+        data->DesiredSize = ImVec2(IM_MAX(data->DesiredSize.x, data->DesiredSize.y),
+                                   IM_MAX(data->DesiredSize.x, data->DesiredSize.y));
+    }
+
+    static void Step(ImGuiSizeCallbackData *data) {
+        auto step = (float) (int) (intptr_t) data->UserData;
+        data->DesiredSize = ImVec2(roundf(data->DesiredSize.x / step + 0.5f) * step,
+                                   roundf(data->DesiredSize.y / step + 0.5f) * step);
+    }
+};
+
+static int style_current = 1;
 static int font_current = 0;
+static float heigh_main_menu_bar = 0;
+
 static void glfw_error_callback(int error, const char *description) {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
 
-static void ShowDebugMenu()
-{
+static void ShowDebugMenu() {
     ImGui::MenuItem("Debug Menu", nullptr, false, false);
     if (ImGui::MenuItem("Open", "Ctrl+O")) {}
-    if (ImGui::BeginMenu("Open Recent"))
-    {
-        if (ImGui::BeginMenu("More.."))
-        {
-            if (ImGui::BeginMenu("Recurse.."))
-            {
+    if (ImGui::BeginMenu("Open Recent")) {
+        if (ImGui::BeginMenu("More..")) {
+            if (ImGui::BeginMenu("Recurse..")) {
                 ShowDebugMenu();
                 ImGui::EndMenu();
             }
@@ -35,53 +51,54 @@ static void ShowDebugMenu()
     }
     ImGui::Separator();
 
-    if (ImGui::BeginMenu("Themes"))
-    {
-        ImGui::ShowStyleSelector("Choose");
+    if (ImGui::BeginMenu("Themes")) {
+        const char *styles[] = {"Classic","Dark","Light"};
+        ImGui::Combo("##theme", &style_current, styles, IM_ARRAYSIZE(styles));
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Font"))
-    {
-        const char* fonts[] = { "Default", "Cousine", "Karla", "Lato", "lato light"};
-        ImGui::Combo("font-combo", &font_current, fonts, IM_ARRAYSIZE(fonts));
+    if (ImGui::BeginMenu("Font")) {
+        const char *fonts[] = {"Default", "Cousine", "Karla", "Lato", "lato light"};
+        ImGui::Combo("##font", &font_current, fonts, IM_ARRAYSIZE(fonts));
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Disabled", false)) // Disabled
+    if (ImGui::BeginMenu("By Neil#4879", false)) // Disabled
     {
         IM_ASSERT(0);
     }
-    if (ImGui::MenuItem("Quit", "Alt+F4")) {}
+    if (ImGui::MenuItem("Quit the application", "Alt+F4")) {
+        exit(0);
+    }
 }
 
-static void ShowMainWindow(bool show){
-    struct CustomConstraints // Helper functions to demonstrate programmatic constraints
-    {
-        static void Square(ImGuiSizeCallbackData* data) { data->DesiredSize = ImVec2(IM_MAX(data->DesiredSize.x, data->DesiredSize.y), IM_MAX(data->DesiredSize.x, data->DesiredSize.y)); }
-        static void Step(ImGuiSizeCallbackData* data)   { auto step = (float)(int)(intptr_t)data->UserData; data->DesiredSize = ImVec2(roundf(data->DesiredSize.x / step + 0.5f) * step, roundf(data->DesiredSize.y / step + 0.5f) * step); }
-    };
-    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), CustomConstraints::Square);
-    ImGuiWindowFlags window_flags = (unsigned int)0;
-    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoTitleBar;
-    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoScrollbar;
-    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoMove;
-    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoCollapse;
-    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoNav;
-    window_flags = (unsigned int)window_flags|ImGuiWindowFlags_NoResize;
+static void ShowMainWindow(bool show) {
+
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), nullptr);
+    ImGuiWindowFlags window_flags = (unsigned int) 0;
+    window_flags = (unsigned int) window_flags | ImGuiWindowFlags_NoTitleBar;
+    window_flags = (unsigned int) window_flags | ImGuiWindowFlags_NoScrollbar;
+    window_flags = (unsigned int) window_flags | ImGuiWindowFlags_NoMove;
+    window_flags = (unsigned int) window_flags | ImGuiWindowFlags_NoCollapse;
+    window_flags = (unsigned int) window_flags | ImGuiWindowFlags_NoNav;
+    window_flags = (unsigned int) window_flags | ImGuiWindowFlags_NoResize;
+    ImVec2 mainFactorSize = ImVec2(0.7, 1);
+    ImVec2 mainFactorPos = ImVec2(0.15, 1);
+    ImGui::SetNextWindowSize(
+            ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * mainFactorSize);
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * mainFactorPos,
+                            ImGuiCond_Always);
     ImGui::Begin("Main", &show, window_flags);
 
-    ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.y,ImGui::GetIO().DisplaySize.y));
 
     ImGui::End();
 }
-static void ShowMainMenuBar()
-{
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("Debug"))
-        {
+
+static void ShowMainMenuBar() {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("Debug")) {
             ShowDebugMenu();
             ImGui::EndMenu();
         }
+        heigh_main_menu_bar = ImGui::GetWindowSize().y;
         ImGui::EndMainMenuBar();
     }
 }
@@ -120,7 +137,13 @@ int main(int argc, char **argv) {
     ImGui_ImplOpenGL3_Init();
 
     // Setup style
-    ImGui::StyleColorsDark();
+    switch (style_current)
+    {
+        case 0: ImGui::StyleColorsClassic(); break;
+        case 1: ImGui::StyleColorsDark(); break;
+        case 2: ImGui::StyleColorsLight(); break;
+        default:ImGui::StyleColorsDark(); break;
+    }
     //load fonts
     auto font_default = io.Fonts->AddFontDefault();
     auto font_cousine = io.Fonts->AddFontFromFileTTF(CPP_SRC_DIR "modules/imgui/misc/fonts/Cousine-Regular.ttf", 15.0f);
@@ -137,8 +160,7 @@ int main(int argc, char **argv) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        switch (font_current)
-        {
+        switch (font_current) {
             case 0:
                 ImGui::PushFont(font_default);
                 break;
@@ -161,7 +183,7 @@ int main(int argc, char **argv) {
         ShowMainMenuBar();
 
 
-        bool showMain=true;
+        bool showMain = true;
         ShowMainWindow(showMain);
         ImGui::PopFont();
         // Rendering
