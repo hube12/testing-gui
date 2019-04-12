@@ -32,6 +32,7 @@ struct CustomConstraints // Helper functions to demonstrate programmatic constra
     }
 };
 
+static bool log_bool = false;
 static int style_current = 1;
 static int font_current = 0;
 static float heigh_main_menu_bar = 0;
@@ -73,10 +74,10 @@ static void ShowDebugMenu() {
         ImGui::Combo("##font", &font_current, fonts, IM_ARRAYSIZE(fonts));
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("By Neil#4879", false)) // Disabled
-    {
+    if (ImGui::BeginMenu("By Neil#4879", false)) {
         IM_ASSERT(0);
     }
+    if (ImGui::MenuItem("Log")) { log_bool = true; }
     if (ImGui::MenuItem("Quit the application", "Alt+F4")) {
         exit(0);
     }
@@ -85,26 +86,26 @@ static void ShowDebugMenu() {
 static void ShowBackgroundWindow() {
     ImGui::SetNextWindowBgAlpha(0.0f);
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), nullptr);
-    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetFrameHeight()*3));
+    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetFrameHeight() * 3));
     ImGui::SetNextWindowPos(ImVec2(0, heigh_main_menu_bar), ImGuiCond_Always);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(ImGui::GetFrameHeight()/2, ImGui::GetFrameHeight()/2));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(ImGui::GetFrameHeight() / 2, ImGui::GetFrameHeight() / 2));
 
-    if (!ImGui::Begin("Background", nullptr,windowFlags)) {
+    if (!ImGui::Begin("Background", nullptr, windowFlags)) {
         ImGui::End();
         return;
     }
     ImGui::SetCursorPos(ImVec2(0, 0));
     ImGui::PushItemWidth(100);
-    if (ImGui::ArrowButton("##leftHide", showLeft?ImGuiDir_Left:ImGuiDir_Right)) {
+    if (ImGui::ArrowButton("##leftHide", showLeft ? ImGuiDir_Left : ImGuiDir_Right)) {
         showLeft = !showLeft;
     }
     ImGui::SetCursorPos(ImVec2(ImGui::GetIO().DisplaySize.x - ImGui::GetFrameHeight(), 0));
-    if (ImGui::ArrowButton("##rightHide", showRight?ImGuiDir_Right:ImGuiDir_Left)) {
+    if (ImGui::ArrowButton("##rightHide", showRight ? ImGuiDir_Right : ImGuiDir_Left)) {
         showRight = !showRight;
     }
 
@@ -121,7 +122,7 @@ static void ShowMainWindow() {
             ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * mainFactorSize);
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * mainFactorPos,
                             ImGuiCond_Always);
-    if (!ImGui::Begin("Main", nullptr,windowFlags)) {
+    if (!ImGui::Begin("Main", nullptr, windowFlags)) {
         ImGui::End();
         return;
     }
@@ -137,7 +138,7 @@ static void ShowLeftWindows() {
             ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * leftFactorSize);
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * leftFactorPos,
                             ImGuiCond_Always);
-    if (!ImGui::Begin("Left", nullptr,windowFlags) || !showLeft) {
+    if (!ImGui::Begin("Left", nullptr, windowFlags) || !showLeft) {
         ImGui::End();
         return;
     }
@@ -154,7 +155,7 @@ static void ShowRightWindows() {
             ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * rightFactorSize);
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * rightFactorPos,
                             ImGuiCond_Always);
-    if (!ImGui::Begin("Right", nullptr,windowFlags)|| !showRight) {
+    if (!ImGui::Begin("Right", nullptr, windowFlags) || !showRight) {
         ImGui::End();
         return;
     }
@@ -174,6 +175,7 @@ static void ShowMainMenuBar() {
 }
 
 int main(int argc, char **argv) {
+
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -216,12 +218,17 @@ int main(int argc, char **argv) {
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f); //backgound color
     while (!glfwWindowShouldClose(window)) {
+
         glfwWaitEvents();
 
         // Start the ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        if (log_bool) {
+            ImGui::LogToFile(10, "log_gui.txt");
+            log_bool = false;
+        }
         // Setup style
         switch (style_current) {
             case 0:
@@ -263,8 +270,10 @@ int main(int argc, char **argv) {
         }
         ShowMainMenuBar();
 
-        ShowBackgroundWindow();
-
+        if (showMain) {
+            ShowBackgroundWindow();
+            ShowMainWindow();
+        }
         if (showLeft) { ShowLeftWindows(); }
         if (showRight) { ShowRightWindows(); }
         ImGui::PopFont();
@@ -293,6 +302,8 @@ int main(int argc, char **argv) {
 
     glfwTerminate();
 
+    ImGui::LogFinish();
+
 }
 
 static void StyleColorsSofty(ImGuiStyle *dst) {
@@ -302,7 +313,7 @@ static void StyleColorsSofty(ImGuiStyle *dst) {
     int hspacing = 8;
     int vspacing = 6;
     style->DisplaySafeAreaPadding = ImVec2(0, 0);
-    style->WindowPadding = ImVec2(hspacing / 2, vspacing);
+    style->WindowPadding = ImVec2((float) hspacing / 2, vspacing);
     style->FramePadding = ImVec2(hspacing, vspacing);
     style->ItemSpacing = ImVec2(hspacing, vspacing);
     style->ItemInnerSpacing = ImVec2(hspacing, vspacing);
