@@ -1,32 +1,21 @@
 #include "imgui.h"
 #include "implementation/imgui_impl_glfw.h"
 #include "implementation/imgui_impl_opengl3.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
-#include <iostream>
-#include "imgui_internal.h"
+#include <cstdio>
+#include "ressources/pillars.h"
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "implementation/stb_image.h"
+
 
 #define IM_MAX(_A, _B)       (((_A) >= (_B)) ? (_A) : (_B))
+#define IM_MIN(_A, _B)       (((_A) <= (_B)) ? (_A) : (_B))
 
 static inline ImVec2 operator*(ImVec2 a, ImVec2 b) { return {a.x * b.x, a.y * b.y}; }
 
-struct CustomConstraints // Helper functions to demonstrate programmatic constraints
-{
-    static void Square(ImGuiSizeCallbackData *data) {
-        data->DesiredSize = ImVec2(IM_MAX(data->DesiredSize.x, data->DesiredSize.y),
-                                   IM_MAX(data->DesiredSize.x, data->DesiredSize.y));
-    }
-
-    static void Step(ImGuiSizeCallbackData *data) {
-        auto step = (float) (int) (intptr_t) data->UserData;
-        data->DesiredSize = ImVec2(roundf(data->DesiredSize.x / step + 0.5f) * step,
-                                   roundf(data->DesiredSize.y / step + 0.5f) * step);
-    }
-};
 
 static bool log_bool = false;
 static int style_current = 1;
@@ -35,10 +24,37 @@ static float heigh_main_menu_bar = 0;
 static bool showMain = true;
 static bool showLeft = false;
 static bool showRight = false;
-static ImGuiWindowFlags windowFlags =
-        (unsigned int) ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoBringToFrontOnFocus;
+static ImGuiWindowFlags windowFlags = (unsigned int) ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+                                      ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus;
+GLuint pillars_texture;
+
+
+struct CustomConstraints // Helper functions to demonstrate programmatic constraints
+{
+    static void Square(ImGuiSizeCallbackData *data) {
+        data->DesiredSize = ImVec2(IM_MIN(data->DesiredSize.x, data->DesiredSize.y), IM_MIN(data->DesiredSize.x, data->DesiredSize.y));
+    }
+
+    static void Step(ImGuiSizeCallbackData *data) {
+        auto step = (float) (int) (intptr_t) data->UserData;
+        data->DesiredSize = ImVec2(roundf(data->DesiredSize.x / step + 0.5f) * step, roundf(data->DesiredSize.y / step + 0.5f) * step);
+    }
+};
+
+static GLuint loadpng(GLuint my_opengl_texture) {
+    int my_image_width, my_image_height;
+    unsigned char *my_image_data = stbi_load_from_memory(pillars_png_start, pillars_png_size, &my_image_width, &my_image_height, nullptr, 4);
+    // Turn the RGBA pixel data into an OpenGL texture:
+    glGenTextures(1, &my_opengl_texture);
+    glBindTexture(GL_TEXTURE_2D, my_opengl_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, my_image_width, my_image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, my_image_data);
+    stbi_image_free(my_image_data);
+    return my_opengl_texture;
+}
+
 
 static void glfw_error_callback(int error, const char *description) {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -89,7 +105,8 @@ static void ShowBackgroundWindow() {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(ImGui::GetFrameHeight() / 2, ImGui::GetFrameHeight() / 2));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                        ImVec2(ImGui::GetFrameHeight() / 2, ImGui::GetFrameHeight() / 2));
 
     if (!ImGui::Begin("Background", nullptr, windowFlags)) {
         ImGui::End();
@@ -109,29 +126,31 @@ static void ShowBackgroundWindow() {
     ImGui::PopStyleVar(5);
 }
 
-static void ShowMainWindow() {
 
-    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), nullptr);
-    ImVec2 mainFactorSize = ImVec2(0.7, 1);
-    ImVec2 mainFactorPos = ImVec2(0.15, 1);
-    ImGui::SetNextWindowSize(
-            ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * mainFactorSize);
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * mainFactorPos,
+static void ShowMainWindow() {
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), CustomConstraints::Square);
+    ImVec2 mainFactorSize = ImVec2(0.5, 1);
+    ImVec2 mainFactorPos = ImVec2(0.10, 1);
+    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * mainFactorSize);
+    float x = ImGui::GetIO().DisplaySize.x * mainFactorSize.x, y = ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar;
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x + ((x > y) ? ((x - y) / 2 / mainFactorPos.x) : 0), heigh_main_menu_bar + ((y > x) ? (y - x) / 2 : 0)) * mainFactorPos,
                             ImGuiCond_Always);
     if (!ImGui::Begin("Main", nullptr, windowFlags)) {
         ImGui::End();
         return;
     }
+    ImGui::Image((void *) (intptr_t) pillars_texture, ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y));
     ImGui::End();
 }
 
 static void ShowLeftWindows() {
 
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), nullptr);
-    ImVec2 leftFactorSize = ImVec2(0.15, 1);
+    ImVec2 leftFactorSize = ImVec2(0.10, 1);
     ImVec2 leftFactorPos = ImVec2(0.0, 1);
     ImGui::SetNextWindowSize(
-            ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * leftFactorSize);
+            ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) *
+            leftFactorSize);
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * leftFactorPos,
                             ImGuiCond_Always);
     if (!ImGui::Begin("Left", nullptr, windowFlags) || !showLeft) {
@@ -145,12 +164,10 @@ static void ShowLeftWindows() {
 static void ShowRightWindows() {
 
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), nullptr);
-    ImVec2 rightFactorSize = ImVec2(0.15, 1);
-    ImVec2 rightFactorPos = ImVec2(0.85, 1);
-    ImGui::SetNextWindowSize(
-            ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * rightFactorSize);
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * rightFactorPos,
-                            ImGuiCond_Always);
+    ImVec2 rightFactorSize = ImVec2(0.4, 1);
+    ImVec2 rightFactorPos = ImVec2(0.6, 1);
+    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * rightFactorSize);
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * rightFactorPos, ImGuiCond_Always);
     if (!ImGui::Begin("Right", nullptr, windowFlags) || !showRight) {
         ImGui::End();
         return;
@@ -171,7 +188,6 @@ static void ShowMainMenuBar() {
 }
 
 int main(int argc, char **argv) {
-
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -213,6 +229,8 @@ int main(int argc, char **argv) {
     auto font_lato_light = io.Fonts->AddFontFromFileTTF(CPP_SRC_DIR "fonts/Lato-Light.ttf", 18.0f);
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f); //backgound color
+
+    pillars_texture = loadpng(pillars_texture);
     while (!glfwWindowShouldClose(window)) {
 
         glfwWaitEvents();
