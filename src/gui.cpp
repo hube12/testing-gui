@@ -15,13 +15,17 @@
 
 #define IM_MAX(_A, _B)       (((_A) >= (_B)) ? (_A) : (_B))
 #define IM_MIN(_A, _B)       (((_A) <= (_B)) ? (_A) : (_B))
-#define IMVEC_PRINT(_A) (_A.x,_A.y)
+#define IMVEC_PRINT(_A) (printf("%f %f \n",_A.x,_A.y))
 
 static inline ImVec2 operator*(ImVec2 a, ImVec2 b) { return {a.x * b.x, a.y * b.y}; }
+
 static inline ImVec2 operator*(ImVec2 a, float b) { return {a.x * b, a.y * b}; }
+
 static inline ImVec2 operator-(ImVec2 a, ImVec2 b) { return {a.x - b.x, a.y - b.y}; }
-static inline ImVec2 operator+(ImVec2 a, ImVec2 b) { return {a.x -+b.x, a.y + b.y}; }
-static inline ImVec2 operator/(ImVec2 a, float b) { return {a.x /b, a.y /b}; }
+
+static inline ImVec2 operator+(ImVec2 a, ImVec2 b) { return {a.x +b.x, a.y + b.y}; }
+
+static inline ImVec2 operator/(ImVec2 a, float b) { return {a.x / b, a.y / b}; }
 
 
 static bool log_bool = false;
@@ -153,18 +157,17 @@ static void ShowMainWindow() {
     static bool selected[10] = {false, false, false, false, false, false, false, false, false, false};
     static float posx[10]{0.5, 0.34, 0.24, 0.24, 0.34, 0.5, 0.66, 0.76, 0.76, 0.66};
     static float posy[10]{0.78, 0.72, 0.58, 0.42, 0.28, 0.22, 0.28, 0.42, 0.58, 0.72};
-    ImGui::PushStyleColor(ImGuiCol_Border,ImVec4(244,209,66,1));
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,2);
+
     for (int i = 0; i < 10; i++) {
         ImGui::PushID(i);
-        float scaleFactor=ImGui::GetWindowSize().x/1000;
-        ImVec2 higherCorner=ImVec2(posx[i],posy[i])*ImGui::GetWindowSize()-ImVec2(20,20)*scaleFactor+ImGui::GetWindowPos();
-        ImVec2 lowerCorner=higherCorner+ImVec2(50, 50)*scaleFactor;
-        ImGui::GetWindowDrawList()->AddRectFilled(higherCorner,lowerCorner,ImGui::GetColorU32(ImVec4(1,1,0,1)));
+        float scaleFactor = ImGui::GetWindowSize().x / 1000.0;
+        ImVec2 higherCorner = ImVec2(posx[i], posy[i]) * ImGui::GetWindowSize() + ImGui::GetWindowPos()+ ImVec2(10, 10) * scaleFactor +ImVec2(1, 1) / scaleFactor;
+        //ImVec2 lowerCorner = higherCorner + ImVec2(50, 50) * scaleFactor;
+        //ImGui::GetWindowDrawList()->AddRectFilled(higherCorner, lowerCorner, ImGui::GetColorU32(ImVec4(1, 1, 1, 1)),5,ImDrawCornerFlags_All);
+        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner,40*scaleFactor,ImGui::GetColorU32(ImVec4(1, 1, 0, 1)),30);
+        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner,38*scaleFactor,ImGui::GetColorU32(ImVec4(1, 1, 1, 1)),30);
         ImGui::PopID();
     }
-    ImGui::PopStyleColor();
-    ImGui::PopStyleVar();
     ImGui::End();
 }
 
@@ -229,8 +232,12 @@ int main(int argc, char **argv) {
     glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-    GLFWwindow *window = glfwCreateWindow(mode->width / 2, mode->height / 2, "NeilSeedCrackerV2.0", nullptr, nullptr);
+    glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_TRUE);
+    glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+    glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
 
+    GLFWwindow *window = glfwCreateWindow(mode->width / 2, mode->height / 2, "NeilSeedCrackerV2.0", nullptr, nullptr);
+    glfwSetWindowSizeLimits(window,480,270,GLFW_DONT_CARE,GL_DONT_CARE);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
