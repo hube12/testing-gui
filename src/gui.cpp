@@ -5,7 +5,9 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <cstdio>
+#include <iostream>
 #include "ressources/pillars.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "implementation/stb_image.h"
@@ -13,8 +15,13 @@
 
 #define IM_MAX(_A, _B)       (((_A) >= (_B)) ? (_A) : (_B))
 #define IM_MIN(_A, _B)       (((_A) <= (_B)) ? (_A) : (_B))
+#define IMVEC_PRINT(_A) (_A.x,_A.y)
 
 static inline ImVec2 operator*(ImVec2 a, ImVec2 b) { return {a.x * b.x, a.y * b.y}; }
+static inline ImVec2 operator*(ImVec2 a, float b) { return {a.x * b, a.y * b}; }
+static inline ImVec2 operator-(ImVec2 a, ImVec2 b) { return {a.x - b.x, a.y - b.y}; }
+static inline ImVec2 operator+(ImVec2 a, ImVec2 b) { return {a.x -+b.x, a.y + b.y}; }
+static inline ImVec2 operator/(ImVec2 a, float b) { return {a.x /b, a.y /b}; }
 
 
 static bool log_bool = false;
@@ -139,7 +146,25 @@ static void ShowMainWindow() {
         ImGui::End();
         return;
     }
-    ImGui::Image((void *) (intptr_t) pillars_texture, ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y));
+    //push the image as a background
+    ImGui::Image((void *) (intptr_t) pillars_texture, ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y));\
+
+    //push 10 selectables in positions
+    static bool selected[10] = {false, false, false, false, false, false, false, false, false, false};
+    static float posx[10]{0.5, 0.34, 0.24, 0.24, 0.34, 0.5, 0.66, 0.76, 0.76, 0.66};
+    static float posy[10]{0.78, 0.72, 0.58, 0.42, 0.28, 0.22, 0.28, 0.42, 0.58, 0.72};
+    ImGui::PushStyleColor(ImGuiCol_Border,ImVec4(244,209,66,1));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,2);
+    for (int i = 0; i < 10; i++) {
+        ImGui::PushID(i);
+        float scaleFactor=ImGui::GetWindowSize().x/1000;
+        ImVec2 higherCorner=ImVec2(posx[i],posy[i])*ImGui::GetWindowSize()-ImVec2(20,20)*scaleFactor+ImGui::GetWindowPos();
+        ImVec2 lowerCorner=higherCorner+ImVec2(50, 50)*scaleFactor;
+        ImGui::GetWindowDrawList()->AddRectFilled(higherCorner,lowerCorner,ImGui::GetColorU32(ImVec4(1,1,0,1)));
+        ImGui::PopID();
+    }
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
     ImGui::End();
 }
 
