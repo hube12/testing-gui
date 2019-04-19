@@ -153,8 +153,7 @@ static void ShowMainWindow() {
     //push the image as a background
     ImGui::Image((void *) (intptr_t) pillars_texture, ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y));\
 
-    //push 10 selectables in positions
-    static bool selected[10] = {false, false, false, false, false, false, false, false, false, false};
+    //push 10 circles on the pillars
     static float posx[10]{0.5, 0.34, 0.24, 0.24, 0.34, 0.5, 0.66, 0.76, 0.76, 0.66};
     static float posy[10]{0.78, 0.72, 0.58, 0.42, 0.28, 0.22, 0.28, 0.42, 0.58, 0.72};
 
