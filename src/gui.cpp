@@ -23,45 +23,53 @@ static inline ImVec2 operator*(ImVec2 a, float b) { return {a.x * b, a.y * b}; }
 
 static inline ImVec2 operator-(ImVec2 a, ImVec2 b) { return {a.x - b.x, a.y - b.y}; }
 
-static inline ImVec2 operator+(ImVec2 a, ImVec2 b) { return {a.x +b.x, a.y + b.y}; }
+static inline ImVec2 operator+(ImVec2 a, ImVec2 b) { return {a.x + b.x, a.y + b.y}; }
 
 static inline ImVec2 operator/(ImVec2 a, float b) { return {a.x / b, a.y / b}; }
+
+static inline ImVec4 operator+(ImVec4 a, ImVec2 b) { return {a.x + b.x, a.y + b.y, a.w + b.x, a.z + b.y}; }
 
 
 static bool log_bool = false;
 static int style_current = 1;
-static int font_current = 0;
+static int font_current = 1;
 static float heigh_main_menu_bar = 0;
 static bool showMain = true;
 static bool showLeft = false;
 static bool showRight = false;
-static ImGuiWindowFlags windowFlags = (unsigned int) ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-                                      ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus;
+static ImGuiWindowFlags windowFlags =
+        (unsigned int) ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus;
 GLuint pillars_texture;
 
 
 struct CustomConstraints // Helper functions to demonstrate programmatic constraints
 {
     static void Square(ImGuiSizeCallbackData *data) {
-        data->DesiredSize = ImVec2(IM_MIN(data->DesiredSize.x, data->DesiredSize.y), IM_MIN(data->DesiredSize.x, data->DesiredSize.y));
+        data->DesiredSize = ImVec2(IM_MIN(data->DesiredSize.x, data->DesiredSize.y),
+                                   IM_MIN(data->DesiredSize.x, data->DesiredSize.y));
     }
 
     static void Step(ImGuiSizeCallbackData *data) {
         auto step = (float) (int) (intptr_t) data->UserData;
-        data->DesiredSize = ImVec2(roundf(data->DesiredSize.x / step + 0.5f) * step, roundf(data->DesiredSize.y / step + 0.5f) * step);
+        data->DesiredSize = ImVec2(roundf(data->DesiredSize.x / step + 0.5f) * step,
+                                   roundf(data->DesiredSize.y / step + 0.5f) * step);
     }
 };
 
 static GLuint loadpng(GLuint my_opengl_texture) {
     int my_image_width, my_image_height;
-    unsigned char *my_image_data = stbi_load_from_memory(pillars_png_start, pillars_png_size, &my_image_width, &my_image_height, nullptr, 4);
+    unsigned char *my_image_data = stbi_load_from_memory(pillars_png_start, pillars_png_size, &my_image_width,
+                                                         &my_image_height, nullptr, 4);
     // Turn the RGBA pixel data into an OpenGL texture:
     glGenTextures(1, &my_opengl_texture);
     glBindTexture(GL_TEXTURE_2D, my_opengl_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, my_image_width, my_image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, my_image_data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, my_image_width, my_image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 my_image_data);
     stbi_image_free(my_image_data);
     return my_opengl_texture;
 }
@@ -142,9 +150,11 @@ static void ShowMainWindow() {
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), CustomConstraints::Square);
     ImVec2 mainFactorSize = ImVec2(0.5, 1);
     ImVec2 mainFactorPos = ImVec2(0.10, 1);
-    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * mainFactorSize);
+    ImGui::SetNextWindowSize(
+            ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * mainFactorSize);
     float x = ImGui::GetIO().DisplaySize.x * mainFactorSize.x, y = ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar;
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x + ((x > y) ? ((x - y) / 2 / mainFactorPos.x) : 0), heigh_main_menu_bar + ((y > x) ? (y - x) / 2 : 0)) * mainFactorPos,
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x + ((x > y) ? ((x - y) / 2 / mainFactorPos.x) : 0),
+                                   heigh_main_menu_bar + ((y > x) ? (y - x) / 2 : 0)) * mainFactorPos,
                             ImGuiCond_Always);
     if (!ImGui::Begin("Main", nullptr, windowFlags)) {
         ImGui::End();
@@ -160,11 +170,16 @@ static void ShowMainWindow() {
     for (int i = 0; i < 10; i++) {
         ImGui::PushID(i);
         float scaleFactor = ImGui::GetWindowSize().x / 1000.0;
-        ImVec2 higherCorner = ImVec2(posx[i], posy[i]) * ImGui::GetWindowSize() + ImGui::GetWindowPos()+ ImVec2(10, 10) * scaleFactor +ImVec2(1, 1) / scaleFactor;
+        ImVec2 higherCorner = ImVec2(posx[i], posy[i]) * ImGui::GetWindowSize() + ImGui::GetWindowPos() +
+                              ImVec2(10, 10) * scaleFactor + ImVec2(1, 1) / scaleFactor;
         //ImVec2 lowerCorner = higherCorner + ImVec2(50, 50) * scaleFactor;
         //ImGui::GetWindowDrawList()->AddRectFilled(higherCorner, lowerCorner, ImGui::GetColorU32(ImVec4(1, 1, 1, 1)),5,ImDrawCornerFlags_All);
-        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner,40*scaleFactor,ImGui::GetColorU32(ImVec4(1, 1, 0, 1)),30);
-        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner,38*scaleFactor,ImGui::GetColorU32(ImVec4(1, 1, 1, 1)),30);
+        ImGui::BeginGroup();
+        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner, 40 * scaleFactor,
+                                                    ImGui::GetColorU32(ImVec4(1, 1, 0, 1)), 30);
+        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner, 38 * scaleFactor,
+                                                    ImGui::GetColorU32(ImVec4(1, 1, 1, 1)), 30);
+        ImGui::EndGroup();
         ImGui::PopID();
     }
     ImGui::End();
@@ -184,7 +199,23 @@ static void ShowLeftWindows() {
         ImGui::End();
         return;
     }
+    for (int i = 0; i < 10; i++) {
+        ImGui::PushID(i);
+        float scaleFactor = ImGui::GetWindowSize().x / 200.0;
+        ImVec2 higherCorner = ImVec2(0.5, (i + 0.5) / 10.0) * ImGui::GetWindowSize() + ImGui::GetWindowPos();
+        ImGui::BeginGroup();
+        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner, 40 * scaleFactor,
+                                                    ImGui::GetColorU32(ImVec4(1, 1, 0, 1)), 30);
+        ImGui::GetWindowDrawList()->AddCircleFilled(higherCorner, 38 * scaleFactor,
+                                                    ImGui::GetColorU32(ImVec4(1, 1, 1, 1)), 30);
 
+        ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 2.5 * scaleFactor,
+                                            higherCorner + ImVec2(-10+(i > 7 ? -2 : 0), -10 + (i > 7 ? -1 : 0)) * scaleFactor * 2,
+                                            IM_COL32(0, 0, 0, 255), std::to_string(i * 3 + 76).c_str(),
+                                            nullptr, 0.0f, nullptr);
+        ImGui::EndGroup();
+        ImGui::PopID();
+    }
     ImGui::End();
 }
 
@@ -193,8 +224,10 @@ static void ShowRightWindows() {
     ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), nullptr);
     ImVec2 rightFactorSize = ImVec2(0.4, 1);
     ImVec2 rightFactorPos = ImVec2(0.6, 1);
-    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * rightFactorSize);
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * rightFactorPos, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(
+            ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y - heigh_main_menu_bar) * rightFactorSize);
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, heigh_main_menu_bar) * rightFactorPos,
+                            ImGuiCond_Always);
     if (!ImGui::Begin("Right", nullptr, windowFlags) || !showRight) {
         ImGui::End();
         return;
@@ -232,11 +265,11 @@ int main(int argc, char **argv) {
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
     glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_TRUE);
-    glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+    //glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
     glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
 
     GLFWwindow *window = glfwCreateWindow(mode->width / 2, mode->height / 2, "NeilSeedCrackerV2.0", nullptr, nullptr);
-    glfwSetWindowSizeLimits(window,480,270,GLFW_DONT_CARE,GL_DONT_CARE);
+    glfwSetWindowSizeLimits(window, 480, 270, GLFW_DONT_CARE, GL_DONT_CARE);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
